@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// Regras de segurança do Cloud Firestore para o Urna Cidadã.
+// - Qualquer cliente pode CRIAR um voto, desde que ele tenha exatamente os campos esperados.
+// - Votos podem ser LIDOS (para a apuração).
+// - Votos NUNCA podem ser alterados nem apagados (imutabilidade, como na urna real).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /eleicoes/{eleicaoId}/votos/{votoId} {
+      allow read: if true;
+
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['cargo', 'tipo', 'numero', 'partido', 'registradoEm', 'urnaId'])
+                    && request.resource.data.cargo in ['VEREADOR', 'PREFEITO']
+                    && request.resource.data.tipo in ['NOMINAL', 'LEGENDA', 'BRANCO', 'NULO']
+                    && request.resource.data.numero is string
+                    && request.resource.data.numero.size() <= 5
+                    && request.resource.data.registradoEm is timestamp;
+
+      allow update, delete: if false;
+    }
+
+    // Qualquer outro caminho é bloqueado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
