@@ -2,6 +2,7 @@ package br.unijorge.urnacidada.modelo;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Voto em um cargo. Classe abstrata com quatro especializações
@@ -14,6 +15,7 @@ public abstract class Voto {
 
     private final Cargo cargo;
     private final Instant registradoEm;
+    private final String id = UUID.randomUUID().toString();
 
     protected Voto(Cargo cargo) {
         this.cargo = Objects.requireNonNull(cargo);
@@ -37,7 +39,7 @@ public abstract class Voto {
     /** Converte o voto em um registro simples para gravar no banco. */
     public RegistroVoto paraRegistro(String urnaId) {
         return new RegistroVoto(cargo.getChave(), getTipo(), getNumero(), getSiglaPartido(),
-                registradoEm, urnaId);
+                registradoEm, urnaId, id);
     }
 
     @Override

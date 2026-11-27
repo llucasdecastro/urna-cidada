@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * <p>Estrutura no banco:
  * <pre>
- * eleicoes/{eleicaoId}/votos/{idGeradoPeloFirestore}
+ * eleicoes/{eleicaoId}/votos/{idDoVoto}
  *     cargo:        "VEREADOR" | "PREFEITO"
  *     tipo:         "NOMINAL" | "LEGENDA" | "BRANCO" | "NULO"
  *     numero:       "21123"
@@ -58,7 +58,8 @@ public class FirestoreVotoRepositorio implements VotoRepositorio {
     @Override
     public void salvar(RegistroVoto registro) {
         String corpo = Json.escrever(FirestoreMapper.paraDocumento(registro));
-        HttpRequest req = HttpRequest.newBuilder(URI.create(urlColecao() + "?key=" + apiKey))
+        HttpRequest req = HttpRequest.newBuilder(URI.create(urlColecao() + "?key=" + apiKey
+                + "&documentId=" + URLEncoder.encode(registro.id(), StandardCharsets.UTF_8)))
                 .timeout(Duration.ofSeconds(10))
                 .header("Content-Type", "application/json; charset=utf-8")
                 .POST(HttpRequest.BodyPublishers.ofString(corpo, StandardCharsets.UTF_8))
@@ -88,6 +89,9 @@ public class FirestoreVotoRepositorio implements VotoRepositorio {
     private String enviar(HttpRequest req) {
         try {
             HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            // Se a gravação anterior chegou ao servidor, o reenvio não cria outro voto.
+            if (req.method().equals("POST") && resp.statusCode() == 409
+                    && resp.body().contains("\"ALREADY_EXISTS\"")) return resp.body();
             if (resp.statusCode() / 100 != 2) {
                 throw new RepositorioException("Firestore respondeu HTTP " + resp.statusCode() + ": " + resumir(resp.body()));
             }

@@ -30,13 +30,16 @@ public final class FirestoreMapper {
     public static RegistroVoto deDocumento(Map<String, Object> documento) {
         Map<String, Object> campos = (Map<String, Object>) documento.get("fields");
         if (campos == null) throw new IllegalArgumentException("Documento sem campos");
+        String nome = (String) documento.get("name");
+        if (nome == null) throw new IllegalArgumentException("Documento sem nome");
+        String id = nome.substring(nome.lastIndexOf('/') + 1);
         return new RegistroVoto(
                 texto(campos, "cargo"),
                 tipo(texto(campos, "tipo")),
                 texto(campos, "numero"),
                 texto(campos, "partido"),
                 instante(campos.get("registradoEm")),
-                texto(campos, "urnaId"));
+                texto(campos, "urnaId"), id);
     }
 
     /** Formato "achatado" usado no arquivo de contingência. */
@@ -48,6 +51,7 @@ public final class FirestoreMapper {
         m.put("partido", r.partido());
         m.put("registradoEm", r.registradoEm().toString());
         m.put("urnaId", r.urnaId());
+        m.put("id", r.id());
         return m;
     }
 
@@ -55,7 +59,7 @@ public final class FirestoreMapper {
         Object quando = m.get("registradoEm");
         return new RegistroVoto((String) m.get("cargo"), tipo((String) m.get("tipo")), (String) m.get("numero"),
                 (String) m.get("partido"), quando == null ? Instant.EPOCH : Instant.parse((String) quando),
-                (String) m.get("urnaId"));
+                (String) m.get("urnaId"), (String) m.get("id"));
     }
 
     @SuppressWarnings("unchecked")

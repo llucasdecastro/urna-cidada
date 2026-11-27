@@ -82,6 +82,34 @@ public class ApuracaoTest {
     }
 
     @Test
+    public void proporcionalRespeitaLimiteDeVagas() {
+        List<RegistroVoto> l = new ArrayList<>();
+        for (Candidato c : eleicao.candidatosDo(DadosFicticios.VEREADOR)) {
+            adicionar(l, 1, "VEREADOR", TipoVoto.NOMINAL, c.getNumero(), c.getPartido().getSigla());
+        }
+
+        ResultadoCargo r = new Apuracao(eleicao, l).resultadoDe(DadosFicticios.VEREADOR);
+        assertEquals(10, r.getVotosValidos());
+        assertEquals(9, r.getEleitos().size());
+        assertEquals(9, r.getVagasPorPartido().values().stream().mapToInt(Integer::intValue).sum());
+        assertEquals(Integer.valueOf(1), r.getVagasPorPartido().get(eleicao.buscarPartido("69").orElseThrow()));
+    }
+
+    @Test
+    public void proporcionalPreservaPartidoComMaiorMedia() {
+        List<RegistroVoto> l = new ArrayList<>();
+        for (Candidato c : eleicao.candidatosDo(DadosFicticios.VEREADOR)) {
+            adicionar(l, 1, "VEREADOR", TipoVoto.NOMINAL, c.getNumero(), c.getPartido().getSigla());
+        }
+        adicionar(l, 1, "VEREADOR", TipoVoto.NOMINAL, "69100", "ARTE");
+
+        ResultadoCargo r = new Apuracao(eleicao, l).resultadoDe(DadosFicticios.VEREADOR);
+        assertEquals(9, r.getEleitos().size());
+        assertEquals(Integer.valueOf(2), r.getVagasPorPartido().get(eleicao.buscarPartido("69").orElseThrow()));
+        assertEquals(Integer.valueOf(1), r.getVagasPorPartido().get(eleicao.buscarPartido("58").orElseThrow()));
+    }
+
+    @Test
     public void votoDeLegendaContaParaOPartidoNaoParaCandidato() {
         List<RegistroVoto> l = new ArrayList<>();
         adicionar(l, 3, "VEREADOR", TipoVoto.LEGENDA, "69", "ARTE");
