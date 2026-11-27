@@ -55,13 +55,34 @@ public class RegraProporcional implements RegraApuracao {
         }
 
         int distribuidas = vagasPorPartido.values().stream().mapToInt(Integer::intValue).sum();
+        // Com poucos votos, o arredondamento do QE pode gerar vagas a mais.
+        while (distribuidas > vagas) {
+            Partido menor = null;
+            double menorMedia = Double.MAX_VALUE;
+            for (Partido p : eleicao.getPartidos()) {
+                int obtidas = vagasPorPartido.get(p);
+                if (obtidas == 0) continue;
+                double media = (double) resultado.votosDoPartido(p) / obtidas;
+                if (media < menorMedia || (media == menorMedia && p.getNumero() > menor.getNumero())) {
+                    menor = p;
+                    menorMedia = media;
+                }
+            }
+            vagasPorPartido.merge(menor, -1, Integer::sum);
+            distribuidas--;
+        }
+
         while (distribuidas < vagas) {
             Partido melhor = null;
             double melhorMedia = 0;
             for (Partido p : eleicao.getPartidos()) {
                 if (vagasPorPartido.get(p) >= candidatosDisponiveis.get(p)) continue;
                 double media = (double) resultado.votosDoPartido(p) / (vagasPorPartido.get(p) + 1);
-                if (media > melhorMedia) { melhorMedia = media; melhor = p; }
+                if (media > melhorMedia || (media == melhorMedia && melhor != null
+                        && p.getNumero() < melhor.getNumero())) {
+                    melhorMedia = media;
+                    melhor = p;
+                }
             }
             if (melhor == null) break; // ninguém mais pode receber vaga
             vagasPorPartido.merge(melhor, 1, Integer::sum);

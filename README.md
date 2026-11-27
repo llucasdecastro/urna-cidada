@@ -84,7 +84,7 @@ Se a internet cair, os votos vão para `~/.urna-cidada/contingencia-*.jsonl`. De
 mvn test
 ```
 
-São 30 testes JUnit, cobrindo o fluxo da urna, os tipos de voto, a apuração majoritária e proporcional, a conversão JSON/Firestore e a contingência offline.
+São 32 testes JUnit, cobrindo o fluxo da urna, os tipos de voto, a apuração majoritária e proporcional, a conversão JSON/Firestore e a contingência offline.
 
 ## Entregas do projeto de extensão
 
@@ -113,6 +113,7 @@ src/main/java/br/unijorge/urnacidada
 
 - Turno único para prefeito (empate apenas sinalizado).
 - No proporcional, aplica-se o quociente eleitoral, o quociente partidário, as sobras pelas maiores médias e a votação mínima de 10% do QE por candidato. Não se aplicam as exigências de 20% e 80% do QE nas sobras.
+- Se o arredondamento do quociente eleitoral gerar vagas excedentes, elas são retiradas dos partidos com menor média de votos por vaga. No empate de médias, tem preferência o partido de menor número (critério didático).
 - Sem identificação biométrica do eleitor.
 
 ## Referências
