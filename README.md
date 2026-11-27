@@ -84,7 +84,7 @@ Se a internet cair, os votos vão para `~/.urna-cidada/contingencia-*.jsonl`. De
 mvn test
 ```
 
-São 29 testes JUnit, cobrindo o fluxo da urna, os tipos de voto, a apuração majoritária e proporcional, a conversão JSON/Firestore e a contingência offline.
+São 30 testes JUnit, cobrindo o fluxo da urna, os tipos de voto, a apuração majoritária e proporcional, a conversão JSON/Firestore e a contingência offline.
 
 ## Entregas do projeto de extensão
 

@@ -40,7 +40,7 @@ public class PersistenciaTest {
         assertTrue(json.contains("\"stringValue\":\"VEREADOR\""));
         assertTrue(json.contains("\"timestampValue\":\"2026-11-20T14:30:00Z\""));
         // simula a resposta do Firestore, que inclui "name" e datas
-        String resposta = "{\"name\":\"projects/x/databases/(default)/documents/eleicoes/e/votos/abc\","
+        String resposta = "{\"name\":\"projects/x/databases/(default)/documents/eleicoes/e/votos/" + exemplo.id() + "\","
                 + json.substring(1, json.length() - 1) + ",\"createTime\":\"2026-11-20T14:30:01Z\"}";
         RegistroVoto volta = FirestoreMapper.deDocumento((Map<String, Object>) Json.ler(resposta));
         assertEquals(exemplo, volta);
@@ -80,14 +80,35 @@ public class PersistenciaTest {
         assertEquals(1, repo.listarTodos().size()); // sem duplicar
     }
 
+    @Test
+    public void respostaPerdidaNaoDuplicaVoto() throws Exception {
+        NuvemFalsa nuvem = new NuvemFalsa();
+        ArquivoVotoRepositorio local = new ArquivoVotoRepositorio(Files.createTempDirectory("urna").resolve("c.jsonl"));
+        RepositorioComContingencia repo = new RepositorioComContingencia(nuvem, local);
+
+        nuvem.perderResposta = true;
+        repo.salvar(exemplo);
+        assertEquals(1, repo.getQuantidadePendentes());
+        assertEquals(1, repo.listarTodos().size());
+
+        assertEquals(1, repo.sincronizarPendentes());
+        assertEquals(0, repo.getQuantidadePendentes());
+        assertEquals(1, nuvem.listarTodos().size());
+    }
+
     /** Repositório que simula a nuvem caindo. */
     private static class NuvemFalsa implements VotoRepositorio {
         boolean online = true;
+        boolean perderResposta;
         private final MemoriaVotoRepositorio dados = new MemoriaVotoRepositorio();
 
         @Override public void salvar(RegistroVoto r) {
             if (!online) throw new RepositorioException("sem internet");
-            dados.salvar(r);
+            if (dados.listarTodos().stream().noneMatch(v -> v.id().equals(r.id()))) dados.salvar(r);
+            if (perderResposta) {
+                perderResposta = false;
+                throw new RepositorioException("resposta perdida");
+            }
         }
         @Override public List<RegistroVoto> listarTodos() {
             if (!online) throw new RepositorioException("sem internet");

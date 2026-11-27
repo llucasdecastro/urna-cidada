@@ -4,6 +4,8 @@ import br.unijorge.urnacidada.modelo.RegistroVoto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Decorator: tenta gravar no repositório principal (nuvem) e, se falhar,
@@ -36,15 +38,15 @@ public class RepositorioComContingencia implements VotoRepositorio {
 
     @Override
     public List<RegistroVoto> listarTodos() {
-        List<RegistroVoto> todos = new ArrayList<>();
+        Map<String, RegistroVoto> todos = new LinkedHashMap<>();
         try {
-            todos.addAll(principal.listarTodos());
+            for (RegistroVoto r : principal.listarTodos()) todos.put(r.id(), r);
             ultimoErro = null;
         } catch (RepositorioException e) {
             ultimoErro = e.getMessage();
         }
-        todos.addAll(contingencia.listarTodos());
-        return todos;
+        for (RegistroVoto r : contingencia.listarTodos()) todos.putIfAbsent(r.id(), r);
+        return new ArrayList<>(todos.values());
     }
 
     /** Envia para a nuvem os votos guardados localmente. Retorna quantos foram enviados. */

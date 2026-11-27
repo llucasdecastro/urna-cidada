@@ -158,8 +158,9 @@ public class UrnaTest {
         digitar("21123"); urna.confirmar();
         digitar("21"); urna.confirmar();
         List<RegistroVoto> votos = repo.listarTodos();
-        // Um registro só tem: cargo, tipo, número, partido, horário e id da urna
-        assertEquals(6, RegistroVoto.class.getRecordComponents().length);
+        // O id identifica o voto, não o eleitor.
+        assertEquals(7, RegistroVoto.class.getRecordComponents().length);
+        assertNotEquals(votos.get(0).id(), votos.get(1).id());
         assertEquals("urna-teste", votos.get(0).urnaId());
     }
 

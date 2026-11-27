@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Grava cada voto como uma linha JSON em um arquivo local.
@@ -43,9 +44,17 @@ public class ArquivoVotoRepositorio implements VotoRepositorio {
         if (!Files.exists(arquivo)) return List.of();
         try {
             List<RegistroVoto> lista = new ArrayList<>();
+            int posicao = 0;
             for (String linha : Files.readAllLines(arquivo, StandardCharsets.UTF_8)) {
+                posicao++;
                 if (linha.isBlank()) continue;
-                lista.add(FirestoreMapper.deMapaSimples((Map<String, Object>) Json.ler(linha)));
+                Map<String, Object> mapa = (Map<String, Object>) Json.ler(linha);
+                // Arquivos antigos não tinham id; mantém um identificador por linha.
+                if (mapa.get("id") == null) {
+                    String chave = arquivo.toAbsolutePath() + ":" + posicao + ":" + linha;
+                    mapa.put("id", UUID.nameUUIDFromBytes(chave.getBytes(StandardCharsets.UTF_8)).toString());
+                }
+                lista.add(FirestoreMapper.deMapaSimples(mapa));
             }
             return lista;
         } catch (IOException | RuntimeException e) {
