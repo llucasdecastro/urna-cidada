@@ -91,7 +91,7 @@ São 29 testes JUnit, cobrindo o fluxo da urna, os tipos de voto, a apuração m
 - [Desafio 1 – Cronograma](entregas/Desafio1_Cronograma_UrnaCidada_Lucas_Daniel.pdf)
 - [Desafio 2 – Memorial ODS](entregas/Desafio2_Memorial_ODS_UrnaCidada_Lucas_Daniel.pdf)
 - [Desafio 3 – Relatório Final](entregas/Desafio3_Relatorio_Final_UrnaCidada_Lucas_Daniel.pdf)
-- [Apresentação da oficina](https://claude.ai/artifact/8nyBBQYai795qogBEi7Lra)
+- [Apresentação da oficina](entregas/Apresentacao_Oficina_UrnaCidada.pdf)
 
 ## Documentação
 
